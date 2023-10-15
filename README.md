@@ -13,6 +13,7 @@ export PYTHONPATH=${PYTHONPATH}:${pwd}
 
 3. Download the data
 ```bash
+bash src/scripts/get_data.sh
 ```
 
 ## Results
