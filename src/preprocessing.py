@@ -11,7 +11,7 @@ def load_data(file_path: Path) -> pd.DataFrame:
 
 def fill_empty_values(dataset: pd.DataFrame) -> pd.DataFrame:
     for column in dataset.columns:
-        fill_value = column.mean()
+        fill_value = dataset[column].mean()
         dataset[column] = dataset[column].fillna(fill_value)
     return dataset
 
