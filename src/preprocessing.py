@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import pandas as pd
-from matplotlib import pyplot as plt
 
 from src.constants import DATASET_COLUMNS
 
@@ -26,8 +25,3 @@ def get_statistics(dataset: pd.DataFrame) -> pd.DataFrame:
     statistics.append(['Quantile (50%)', *list(dataset.quantile(0.5))])
     statistics.append(['Quantile (75%)', *list(dataset.quantile(0.75))])
     return pd.DataFrame(statistics, columns=['Statistic', *dataset.columns])
-
-
-def get_histograms(dataset: pd.DataFrame) -> plt.Figure:
-    dataset.hist(figsize=(8, 8))
-
