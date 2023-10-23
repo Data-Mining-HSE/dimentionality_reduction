@@ -3,7 +3,7 @@ import pandas as pd
 
 def interquartile_range(data: pd.DataFrame) -> pd.DataFrame:
     """
-    The approach of outliers reduction uses the Interquartile Range methodology.
+    The approach of outliers reduction uses the Interquartile Range methodology
 
     References:
     https://www.sciencedirect.com/science/article/pii/S2772662223000048?via%3Dihub
@@ -18,5 +18,5 @@ def interquartile_range(data: pd.DataFrame) -> pd.DataFrame:
 
     outliers_mask = (data < left_bound) | (data > right_bound)
     not_outliers = data[~outliers_mask]
-    outliers_dropped = not_outliers.dropna().reset_index()
+    outliers_dropped = not_outliers.dropna().reset_index(drop=True)
     return outliers_dropped

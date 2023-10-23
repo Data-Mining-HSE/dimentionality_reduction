@@ -2,9 +2,10 @@ import numpy as np
 import pandas as pd
 from numpy import float32
 from numpy.typing import NDArray
+from sklearn.manifold import MDS
 
 
-def svd(dataset: pd.DataFrame) -> pd.DataFrame:
+def svd(dataset: pd.DataFrame) -> tuple[NDArray[float32], NDArray[float32], NDArray[float32]]:
     matrix_u, singular_values, matrix_v = np.linalg.svd(dataset,
                                                   full_matrices=False, 
                                                   compute_uv=True)
@@ -38,12 +39,14 @@ def get_svd_info(singular_values: NDArray[float32]) -> pd.DataFrame:
     return pd.DataFrame(data).T
 
 
-def covert(matrix_u: NDArray[float32], singular_values: NDArray[float32], matrix_v: NDArray[float32],
-           precision: int) ->  NDArray[float32]:
-    singular_values_matrix = np.diag(singular_values)
-    matrix_z = matrix_u.dot(singular_values_matrix)[:,:precision].dot(matrix_v[:precision, :])
-    return matrix_z
+def low_rank_approx(matrix_u: NDArray[float32], singular_values: NDArray[float32],
+                    matrix_v: NDArray[float32], precision: int) ->  NDArray[float32]:
 
+    approximated_matrix = np.zeros((len(matrix_u), len(matrix_v)))
+    for precision_id in range(precision):
+        approximated_matrix += singular_values[precision_id] * np.outer(matrix_u.T[precision_id],
+                                                                        matrix_v[precision_id])
+    return approximated_matrix
 
 
 def get_errors(original_matrix: NDArray[float32], approximated_matrix: NDArray[float32]) -> pd.DataFrame:
@@ -62,3 +65,23 @@ def get_errors(original_matrix: NDArray[float32], approximated_matrix: NDArray[f
     ]
 
     return pd.DataFrame(data, columns=['Error', 'Result'])
+
+
+def get_coefficient_matrix(matrix_z: NDArray[float32], singular_values: NDArray[float32],
+                           matrix_v: NDArray[float32], decomposition_rank: int) -> NDArray[float32]:
+    coefficient_matrix = []
+    for j in range(matrix_z.shape[1]):
+        row_coefficients = []
+        for i in range(decomposition_rank):
+            row_coefficients.append(singular_values[i] * matrix_v[j, i])
+        coefficient_matrix.append(row_coefficients)
+    return np.array(coefficient_matrix).T
+
+
+
+def multidimensional_scaling(dataset: NDArray[float32], verbose: bool = False):
+    mds = MDS(n_components=2, max_iter=300, dissimilarity='euclidean', normalized_stress='auto')
+    decomposed_data = mds.fit_transform(dataset)
+    if verbose:
+        print(f'Stress value: {round(mds.stress_, 2)}')
+    return decomposed_data
