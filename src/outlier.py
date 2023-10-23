@@ -2,6 +2,12 @@ import pandas as pd
 
 
 def interquartile_range(data: pd.DataFrame) -> pd.DataFrame:
+    """
+    The approach of outliers reduction uses the Interquartile Range methodology.
+
+    References:
+    https://www.sciencedirect.com/science/article/pii/S2772662223000048?via%3Dihub
+    """
     quantile_1 = data.quantile(0.25)
     quantile_3 = data.quantile(0.75)
 
