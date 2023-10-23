@@ -9,6 +9,18 @@ def normalize(dataset: pd.DataFrame) -> pd.DataFrame:
     return dataset
 
 
+def normalize(dataset: pd.DataFrame) -> pd.DataFrame:
+    normalized_matrix = _normalize(dataset, norm='l2', axis=0) 
+    dataset = pd.DataFrame(normalized_matrix, columns=dataset.columns)
+    return dataset
+
+
+def centering(dataset: pd.DataFrame) -> pd.DataFrame:
+    for column in dataset.columns:
+        dataset[column] -= dataset[column].mean()
+    return dataset
+
+
 def check_norm(dataset: pd.DataFrame) -> pd.DataFrame:
     data = []
     for column in dataset.columns:
