@@ -4,6 +4,8 @@ from numpy import float32
 from numpy.typing import NDArray
 from sklearn.manifold import MDS
 
+from src.constants import DATASET_COLUMNS
+
 
 def svd(dataset: pd.DataFrame) -> tuple[NDArray[float32], NDArray[float32], NDArray[float32]]:
     matrix_u, singular_values, matrix_v = np.linalg.svd(dataset,
@@ -67,16 +69,20 @@ def get_errors(original_matrix: NDArray[float32], approximated_matrix: NDArray[f
     return pd.DataFrame(data, columns=['Error', 'Result'])
 
 
-def get_coefficient_matrix(matrix_z: NDArray[float32], singular_values: NDArray[float32],
-                           matrix_v: NDArray[float32], decomposition_rank: int) -> NDArray[float32]:
+def get_coefficient_matrix(singular_values: NDArray[float32], matrix_v: NDArray[float32],
+                           decomposition_rank: int) -> NDArray[float32]:
     coefficient_matrix = []
-    for j in range(matrix_z.shape[1]):
+    for j in range(matrix_v.shape[0]):
         row_coefficients = []
         for i in range(decomposition_rank):
-            row_coefficients.append(singular_values[i] * matrix_v[j, i])
+            row_coefficients.append(singular_values[i] * matrix_v[i, j])
         coefficient_matrix.append(row_coefficients)
     return np.array(coefficient_matrix).T
 
+
+def prepare_coefficients(coefficient_matrix: NDArray[float32]) -> pd.DataFrame:
+    coefficients = pd.DataFrame(coefficient_matrix, columns=DATASET_COLUMNS)
+    return coefficients.round(2)
 
 
 def multidimensional_scaling(dataset: NDArray[float32], verbose: bool = False):
