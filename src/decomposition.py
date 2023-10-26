@@ -85,3 +85,19 @@ def multidimensional_scaling(dataset: NDArray[float32], verbose: bool = False):
     if verbose:
         print(f'Stress value: {round(mds.stress_, 2)}')
     return decomposed_data
+
+def get_gram_column_matrix(matrix_z: NDArray[float32]) -> NDArray[float32]:
+    return matrix_z.T @ matrix_z
+
+def is_nonegative_define(gram_matrix: NDArray[float32]) -> NDArray[float32]:
+    return np.all(np.linalg.eigvals(gram_matrix) >= 0)
+
+def get_diagonal_eigenvalues_matrix(gram_matrix: NDArray[float32]) -> NDArray[float32]:
+    if not is_nonegative_define(gram_matrix):
+        print("Gram matrix are negative define. So it is impossible to put our space to Euclidean")
+        return np.zeros_like(gram_matrix.shape)
+    return np.diag(np.linalg.eigvals(gram_matrix))
+
+def get_embbeding_spaces_error(diagonal_matrix: NDArray[float32]) -> float32:
+    return np.sum(diagonal_matrix.diagonal()[2:7] ** 2)
+
