@@ -51,22 +51,22 @@ def low_rank_approx(matrix_u: NDArray[float32], singular_values: NDArray[float32
     return approximated_matrix
 
 
-def get_errors(original_matrix: NDArray[float32], approximated_matrix: NDArray[float32]) -> pd.DataFrame:
+def get_metrics(original_matrix: NDArray[float32], approximated_matrix: NDArray[float32]) -> pd.DataFrame:
 
     errors = original_matrix - approximated_matrix
 
-    error_frobenius_norm = np.linalg.norm(errors, ord='fro') ** 2
-    error_euclidean_norm = np.linalg.norm(errors, ord=2)
+    frobenius_norm = np.linalg.norm(errors, ord='fro') ** 2
+    spectral_norm = np.linalg.norm(errors, ord=2)
 
-    relative_error_frobenius_norm = error_frobenius_norm / np.linalg.norm(original_matrix, ord='fro') ** 2
+    relative_error_frobenius_norm = frobenius_norm / np.linalg.norm(original_matrix, ord='fro') ** 2
 
     data = [
-        ('Frobenius norm error', error_frobenius_norm),
-        ('Spectral norm error', error_euclidean_norm),
-        ('Relative Frobenius norm error', relative_error_frobenius_norm),
+        ('Frobenius norm', frobenius_norm),
+        ('Spectral norm', spectral_norm),
+        ('Relative Frobenius norm', relative_error_frobenius_norm),
     ]
 
-    return pd.DataFrame(data, columns=['Error', 'Result'])
+    return pd.DataFrame(data, columns=['Norm', 'Result']).round(2)
 
 
 def get_coefficient_matrix(singular_values: NDArray[float32], matrix_v: NDArray[float32],

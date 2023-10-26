@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def interquartile_range(data: pd.DataFrame) -> pd.DataFrame:
+def interquartile_range(data: pd.DataFrame, verbose: bool = False) -> pd.DataFrame:
     """
     The approach of outliers reduction uses the Interquartile Range methodology
 
@@ -19,4 +19,9 @@ def interquartile_range(data: pd.DataFrame) -> pd.DataFrame:
     outliers_mask = (data < left_bound) | (data > right_bound)
     not_outliers = data[~outliers_mask]
     outliers_dropped = not_outliers.dropna().reset_index(drop=True)
+    if verbose:
+        heading = 'The outlier data detected'
+        print(heading, '\n', '-'*len(heading))
+        print(outliers_mask.sum().to_string())
+        print('-'*len(heading), '\n', f'Total deleted rows: {len(data) - len(outliers_dropped)}')
     return outliers_dropped
