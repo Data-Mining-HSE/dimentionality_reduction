@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
 from sklearn.preprocessing import normalize as _normalize
 
 
@@ -10,8 +11,9 @@ def normalize(dataset: pd.DataFrame) -> pd.DataFrame:
 
 
 def normalize(dataset: pd.DataFrame) -> pd.DataFrame:
-    normalized_matrix = _normalize(dataset, norm='l2', axis=0) 
-    dataset = pd.DataFrame(normalized_matrix, columns=dataset.columns)
+    for column in dataset.columns:
+        euclidean_column_norm = np.sqrt(dataset[column].abs().pow(2).sum())
+        dataset[column] /= euclidean_column_norm
     return dataset
 
 
