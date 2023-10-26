@@ -10,8 +10,11 @@ def load_data(file_path: Path) -> pd.DataFrame:
 
 
 def fill_empty_values(dataset: pd.DataFrame) -> pd.DataFrame:
-    for column in dataset.columns:
-        fill_value = dataset[column].mean()
+    for column in DATASET_COLUMNS:
+        if column == 'Number of dependents':
+            fill_value = dataset[column].median()
+        else:
+            fill_value = dataset[column].mean()
         dataset[column] = dataset[column].fillna(fill_value)
     return dataset
 
@@ -24,4 +27,4 @@ def get_statistics(dataset: pd.DataFrame) -> pd.DataFrame:
     statistics.append(['Quantile (25%)', *list(dataset.quantile(0.25))])
     statistics.append(['Quantile (50%)', *list(dataset.quantile(0.5))])
     statistics.append(['Quantile (75%)', *list(dataset.quantile(0.75))])
-    return pd.DataFrame(statistics, columns=['Statistic', *dataset.columns])
+    return pd.DataFrame(statistics, columns=['Statistic', *dataset.columns]).round(2)

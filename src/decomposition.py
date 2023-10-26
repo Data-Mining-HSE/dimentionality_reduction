@@ -4,6 +4,8 @@ from numpy import float32
 from numpy.typing import NDArray
 from sklearn.manifold import MDS
 
+from src.constants import DATASET_COLUMNS
+
 
 def svd(dataset: pd.DataFrame) -> tuple[NDArray[float32], NDArray[float32], NDArray[float32]]:
     matrix_u, singular_values, matrix_v = np.linalg.svd(dataset,
@@ -49,34 +51,38 @@ def low_rank_approx(matrix_u: NDArray[float32], singular_values: NDArray[float32
     return approximated_matrix
 
 
-def get_errors(original_matrix: NDArray[float32], approximated_matrix: NDArray[float32]) -> pd.DataFrame:
+def get_metrics(original_matrix: NDArray[float32], approximated_matrix: NDArray[float32]) -> pd.DataFrame:
 
     errors = original_matrix - approximated_matrix
 
-    error_frobenius_norm = np.linalg.norm(errors, ord='fro') ** 2
-    error_euclidean_norm = np.linalg.norm(errors, ord=2)
+    frobenius_norm = np.linalg.norm(errors, ord='fro') ** 2
+    spectral_norm = np.linalg.norm(errors, ord=2)
 
-    relative_error_frobenius_norm = error_frobenius_norm / np.linalg.norm(original_matrix, ord='fro') ** 2
+    relative_error_frobenius_norm = frobenius_norm / np.linalg.norm(original_matrix, ord='fro') ** 2
 
     data = [
-        ('Frobenius norm error', error_frobenius_norm),
-        ('Spectral norm error', error_euclidean_norm),
-        ('Relative Frobenius norm error', relative_error_frobenius_norm),
+        ('Frobenius norm', frobenius_norm),
+        ('Spectral norm', spectral_norm),
+        ('Relative Frobenius norm', relative_error_frobenius_norm),
     ]
 
-    return pd.DataFrame(data, columns=['Error', 'Result'])
+    return pd.DataFrame(data, columns=['Norm', 'Result']).round(2)
 
 
-def get_coefficient_matrix(matrix_z: NDArray[float32], singular_values: NDArray[float32],
-                           matrix_v: NDArray[float32], decomposition_rank: int) -> NDArray[float32]:
+def get_coefficient_matrix(singular_values: NDArray[float32], matrix_v: NDArray[float32],
+                           decomposition_rank: int) -> NDArray[float32]:
     coefficient_matrix = []
-    for j in range(matrix_z.shape[1]):
+    for j in range(matrix_v.shape[0]):
         row_coefficients = []
         for i in range(decomposition_rank):
-            row_coefficients.append(singular_values[i] * matrix_v[j, i])
+            row_coefficients.append(singular_values[i] * matrix_v[i, j])
         coefficient_matrix.append(row_coefficients)
     return np.array(coefficient_matrix).T
 
+
+def prepare_coefficients(coefficient_matrix: NDArray[float32]) -> pd.DataFrame:
+    coefficients = pd.DataFrame(coefficient_matrix, columns=DATASET_COLUMNS)
+    return coefficients.round(2)
 
 
 def multidimensional_scaling(dataset: NDArray[float32], verbose: bool = False):
@@ -85,3 +91,22 @@ def multidimensional_scaling(dataset: NDArray[float32], verbose: bool = False):
     if verbose:
         print(f'Stress value: {round(mds.stress_, 2)}')
     return decomposed_data
+
+
+def get_gram_column_matrix(matrix_z: NDArray[float32]) -> NDArray[float32]:
+    return matrix_z.T @ matrix_z
+
+
+def is_non_negative_define(gram_matrix: NDArray[float32]) -> NDArray[float32]:
+    return np.all(np.linalg.eigvals(gram_matrix) >= 0)
+
+
+def get_diagonal_eigenvalues_matrix(gram_matrix: NDArray[float32]) -> NDArray[float32]:
+    if not is_non_negative_define(gram_matrix):
+        print("Gram matrix are negative define. So it is impossible to put our space to Euclidean")
+        return np.zeros_like(gram_matrix.shape)
+    return np.diag(np.linalg.eigvals(gram_matrix))
+
+
+def get_embedding_spaces_error(diagonal_matrix: NDArray[float32]) -> float32:
+    return np.sum(diagonal_matrix.diagonal()[2:7] ** 2)
